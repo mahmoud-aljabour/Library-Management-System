@@ -1,13 +1,25 @@
 @extends('layout.app')
 
 @section('content')
-    <div class="card">
+    <div class="card table-card">
         <div class="card-header">
+            <span class="text-muted">{{ $members->total() }} member(s)</span>
             @can('create', App\Models\Member::class)
-                <a href="{{ route('members.create') }}" class="btn btn-primary">Add Member</a>
+                <a href="{{ route('members.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus mr-1"></i> Add Member
+                </a>
             @endcan
         </div>
         <div class="card-body">
+            @if ($members->isEmpty())
+                <x-empty-state
+                    icon="fas fa-users"
+                    message="No members found."
+                    :action-url="route('members.create')"
+                    action-label="Add member"
+                />
+            @else
+            <div class="table-responsive-stack">
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -20,16 +32,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($members as $member)
+                    @foreach ($members as $member)
                         <tr>
                             <td><a href="{{ route('members.show', $member) }}">{{ $member->name }}</a></td>
                             <td>{{ $member->email }}</td>
                             <td>{{ $member->phone ?? '-' }}</td>
                             <td>{{ $member->active_borrowings_count }}</td>
                             <td>
-                                <span class="badge badge-{{ $member->is_active ? 'success' : 'secondary' }}">
-                                    {{ $member->is_active ? 'Active' : 'Inactive' }}
-                                </span>
+                                <x-status-badge :status="$member->is_active ? 'active' : 'inactive'" />
                             </td>
                             <td>
                                 @can('update', $member)
@@ -52,14 +62,12 @@
                                 @endcan
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center">No members found.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
+            </div>
             {{ $members->links() }}
+            @endif
         </div>
     </div>
 @endsection

@@ -1,7 +1,7 @@
 @extends('layout.guest')
 
 @section('content')
-    <p class="login-box-msg">Sign in to start your session</p>
+    <p class="login-box-msg">Sign in to manage the library</p>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
@@ -52,4 +52,14 @@
     <p class="mb-1 mt-3">
         <a href="{{ route('password.request') }}">I forgot my password</a>
     </p>
+
+    <div class="demo-credentials">
+        <strong><i class="fas fa-info-circle"></i> Demo accounts</strong>
+        <div class="mt--1">
+            Admin: <code>admin@library.com</code> / <code>password</code>
+        </div>
+        <div>
+            Librarian: <code>librarian@library.com</code> / <code>password</code>
+        </div>
+    </div>
 @endsection

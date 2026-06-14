@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="{{ asset('/plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('/css/library.css') }}">
 </head>
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
-            <a href="{{ route('login') }}"><b>Library</b> System</a>
+            <a href="{{ route('login') }}">
+                <i class="fas fa-book-open mr-1"></i>
+                <b>{{ config('app.name', 'Library') }}</b>
+            </a>
         </div>
         <div class="card">
             <div class="card-body login-card-body">
