@@ -14,13 +14,14 @@ class Review extends Model
         'reviewable_type',
         'member_id',
         'rating',
-        'comment'
+        'comment',
     ];
 
     public function reviewable()
     {
         return $this->morphTo();
     }
+
     public function member()
     {
         return $this->belongsTo(Member::class);

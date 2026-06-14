@@ -19,7 +19,7 @@ return new class extends Migration
                 ->constant('categories')
                 ->cascadeOnDelete();
 
-            $table->primary(['book_id','category_id']);
+            $table->primary(['book_id', 'category_id']);
         });
     }
 

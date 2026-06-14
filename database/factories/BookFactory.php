@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Author;
 use App\Models\Publisher;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Pest\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Book>
@@ -20,6 +19,7 @@ class BookFactory extends Factory
     public function definition(): array
     {
         $stauts = ['available', 'borrowed', 'reserved', 'archived'];
+
         return [
             'title' => fake()->sentence(4),
             'isbn' => fake()->isbn13(),

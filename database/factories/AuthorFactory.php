@@ -4,8 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-use function Symfony\Component\Clock\now;
-
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Author>
  */
@@ -23,7 +21,7 @@ class AuthorFactory extends Factory
             'bio' => fake()->paragraph(),
             'birth_date' => fake()->dateTimeBetween('-30 years'),
             'nationality' => fake()->country(),
-            
+
         ];
     }
 }

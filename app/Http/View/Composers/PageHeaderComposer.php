@@ -35,7 +35,7 @@ class PageHeaderComposer
         ];
 
         foreach ($modules as $prefix => $module) {
-            if (str_starts_with($routeName, $prefix . '.')) {
+            if (str_starts_with($routeName, $prefix.'.')) {
                 return $module;
             }
         }
@@ -70,9 +70,9 @@ class PageHeaderComposer
                 str_starts_with($routeName, 'borrowings.') => 'Borrowings',
                 default => 'Library System',
             },
-            'create' => 'Add ' . $this->singularModule($routeName),
-            'edit' => 'Edit ' . ($name ?? $this->singularModule($routeName)),
-            'show' => $name ?? $this->singularModule($routeName) . ' Details',
+            'create' => 'Add '.$this->singularModule($routeName),
+            'edit' => 'Edit '.($name ?? $this->singularModule($routeName)),
+            'show' => $name ?? $this->singularModule($routeName).' Details',
             default => 'Library System',
         };
     }

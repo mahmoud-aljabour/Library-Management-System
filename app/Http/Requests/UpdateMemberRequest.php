@@ -17,7 +17,7 @@ class UpdateMemberRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:members,email,' . $id,
+            'email' => 'required|email|max:255|unique:members,email,'.$id,
             'phone' => 'nullable|string|max:20',
             'membership_date' => 'required|date',
             'is_active' => 'nullable|boolean',

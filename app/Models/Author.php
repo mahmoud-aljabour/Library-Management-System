@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Author extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'name',
         'bio',
         'birth_date',
-        'nationality'
+        'nationality',
     ];
+
     protected $casts = [
         'birth_date' => 'date',
     ];
-
 
     public function books()
     {

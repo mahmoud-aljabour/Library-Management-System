@@ -11,7 +11,7 @@ class BorrowingController extends Controller
 {
     public function __construct(private BorrowingService $borrowingService)
     {
-        $this->middleware('can:viewAny,' . Borrowing::class)->only('index');
+        $this->middleware('can:viewAny,'.Borrowing::class)->only('index');
     }
 
     public function index(Request $request)

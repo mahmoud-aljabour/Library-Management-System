@@ -1,67 +1,162 @@
-# 📚 Library Management System
+# Library Management System
 
-A comprehensive **library management application** built with Laravel 12 for managing books, members, and borrowing transactions. Features a complete CRUD interface, advanced filtering, and RESTful API endpoints.
+A full-featured library management application built with **Laravel 12** for managing books, members, borrowings, authors, publishers, categories, and reviews. Includes role-based access control and a RESTful API secured with Sanctum.
 
-## ✨ Features
+![Tests](https://github.com/mahmoud-aljabour/Library-Management-System/actions/workflows/tests.yml/badge.svg)
 
-### Book Management
-- Add, edit, delete, and search books
-- Track inventory (total and available copies)
-- Associate books with authors, publishers, and categories
-- Book status tracking (available/borrowed/archived)
-- ISBN tracking for unique identification
-- Soft delete functionality preserves history
+## Features
 
-### Member Management
-- View and manage library members
-- Track membership status (active/inactive)
-- Monitor borrowing history per member
-- Record member contact information
-- Automatic membership duration calculation
+- **Books** — CRUD, inventory tracking, ISBN, categories, status management
+- **Members** — CRUD, active/inactive toggle, borrowing history
+- **Borrowings** — borrow/return workflow, overdue detection, max borrow limit
+- **Authors / Publishers / Categories** — full management with delete guards
+- **Reviews** — ratings and comments on books
+- **Dashboard** — statistics, overdue alerts, recent activity
+- **API** — Sanctum-authenticated REST endpoints for books, members, and borrowings
+- **Roles** — `admin` (full access) and `librarian` (borrowings + reviews, read-only management)
 
-### Borrowing System
-- Record book borrowing transactions
-- Track due dates and return status
-- Identify overdue books automatically
-- Monitor current borrowing activity
-- Dashboard with borrowing statistics
+## Tech Stack
 
-### Dashboard Analytics
-- Total books and members count
-- Currently borrowed books indicator
-- Overdue items tracking
-- Recent borrowing transactions
-- Real-time library statistics
+| Layer | Technology |
+|-------|------------|
+| Backend | Laravel 12, PHP 8.2+ |
+| Frontend | Blade, AdminLTE, custom CSS |
+| Database | MySQL (SQLite for tests) |
+| API Auth | Laravel Sanctum |
+| Testing | Pest PHP |
+| Build | Vite, Composer |
 
-### Advanced Features
-- Author management with biography
-- Publisher database
-- Category/Genre classification
-- Book reviews with ratings (polymorphic)
-- Advanced filtering and search
-- RESTful API with Sanctum authentication
+## Requirements
 
-## 🛠️ Tech Stack
+- PHP 8.2+
+- Composer
+- Node.js 18+ and npm
+- MySQL 8+ (or MariaDB)
 
-- **Backend**: Laravel 12, PHP 8.2, Eloquent ORM
-- **Frontend**: Blade, Tailwind CSS 4, JavaScript
-- **Database**: MySQL/PostgreSQL
-- **API**: RESTful with Laravel Sanctum
-- **Build**: Vite, Composer
-- **Testing**: Pest PHP
-
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# Installation
+# Clone and install
 composer install
 npm install
 
-# Setup
+# Environment
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
 
-# Run development server
+# Database (create laravel_library_system in MySQL first)
+php artisan migrate --seed
+
+# Run
 php artisan serve
-npm run dev
+```
+
+Open `http://localhost:8000` and sign in with a demo account (see below).
+
+### Demo Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@library.com` | `password` |
+| Librarian | `librarian@library.com` | `password` |
+
+> Public registration is disabled. Only seeded staff accounts can log in.
+
+## Configuration
+
+Add these to `.env` to customize library rules:
+
+```env
+LIBRARY_MAX_BORROWINGS=3      # Max active books per member
+LIBRARY_DEFAULT_BORROW_DAYS=14  # Default loan period in days
+```
+
+## Testing
+
+Tests use SQLite in-memory (configured in `phpunit.xml`). No MySQL setup is required.
+
+```bash
+composer test          # Run all tests
+composer pint          # Format code
+composer ci            # Pint check + tests (same as CI)
+```
+
+## API
+
+Authenticate via `POST /api/login`:
+
+```bash
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@library.com","password":"password"}'
+```
+
+Use the returned Bearer token for protected routes:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user` | Current user profile |
+| POST | `/api/logout` | Revoke token |
+| GET/POST/PUT/DELETE | `/api/books` | Books CRUD |
+| GET/POST/PUT/DELETE | `/api/members` | Members CRUD |
+| GET/POST/PUT/DELETE | `/api/borrowings` | Borrowings CRUD |
+
+Rate limit: 60 requests/minute per user.
+
+## Scheduled Tasks
+
+Overdue borrowings are marked automatically:
+
+```bash
+# Runs daily via scheduler
+php artisan library:mark-overdue
+```
+
+Add to cron (production):
+
+```cron
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Deployment (XAMPP / Apache)
+
+1. Point the virtual host document root to the `public/` directory.
+2. Set `APP_ENV=production`, `APP_DEBUG=false` in `.env`.
+3. Run optimizations:
+
+```bash
+composer install --optimize-autoloader --no-dev
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+npm run build
+```
+
+4. Ensure `storage/` and `bootstrap/cache/` are writable.
+5. Configure the scheduler cron and queue worker if using database queues:
+
+```bash
+php artisan queue:work --daemon
+```
+
+## Health Check
+
+Laravel exposes a health endpoint at `/up` for uptime monitoring.
+
+## Project Structure
+
+```
+app/
+  Http/Controllers/   # Web + API controllers
+  Policies/           # Role-based authorization
+  Services/           # BorrowingService business logic
+  Enums/              # UserRole
+resources/views/      # Blade templates (AdminLTE)
+routes/web.php        # Web routes (auth required)
+routes/api.php        # API routes (Sanctum)
+tests/                # Pest feature + unit tests
+```
+
+## License
+
+MIT

@@ -17,11 +17,11 @@ class MemberFactory extends Factory
     public function definition(): array
     {
         return [
-            'name'=> fake()->name(),
-            'email'=> fake()->email(),
-            'phone'=> fake()->phoneNumber(),
-            'membership_date'=> fake()->date(),
-            'is_active'=> fake()->boolean(),
+            'name' => fake()->name(),
+            'email' => fake()->email(),
+            'phone' => fake()->phoneNumber(),
+            'membership_date' => fake()->date(),
+            'is_active' => fake()->boolean(),
 
         ];
     }

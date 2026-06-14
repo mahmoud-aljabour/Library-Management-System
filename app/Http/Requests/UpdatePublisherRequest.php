@@ -16,7 +16,7 @@ class UpdatePublisherRequest extends FormRequest
         $id = $this->route('publisher');
 
         return [
-            'name' => 'required|string|max:255|unique:publishers,name,' . $id,
+            'name' => 'required|string|max:255|unique:publishers,name,'.$id,
             'address' => 'nullable|string|max:500',
             'website' => 'nullable|url|max:255',
         ];

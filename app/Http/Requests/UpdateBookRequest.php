@@ -19,10 +19,12 @@ class UpdateBookRequest extends FormRequest
 
     public function rules(): array
     {
-       $id = $this->route('book');
+        $book = $this->route('book');
+        $id = $book instanceof Book ? $book->id : $book;
+
         return [
-            'title' => 'required|string|max:255|unique:books,title,' . $id,
-            'isbn' => 'required|string|size:13|unique:books,isbn,' . $id,
+            'title' => 'required|string|max:255|unique:books,title,'.$id,
+            'isbn' => 'required|string|size:13|unique:books,isbn,'.$id,
             'description' => 'nullable|string|max:255',
             'publish_date' => 'nullable|date',
             'page_count' => 'nullable|int|min:1',

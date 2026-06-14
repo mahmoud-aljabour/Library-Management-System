@@ -19,27 +19,28 @@ class BorrowingFactory extends Factory
      */
     public function definition(): array
     {
-        $borrowedAt = fake()->dateTimeBetween('-1 month' ,'now');
+        $borrowedAt = fake()->dateTimeBetween('-1 month', 'now');
 
         $dueDate = Carbon::instance($borrowedAt)->addDays(14);
 
         $status = fake()->randomElement(['returned', 'borrowed', 'overdue']);
 
-        $returnedAt = null ;
+        $returnedAt = null;
         if ($status === 'returned') {
             $returnedAt = fake()->dateTimeBetween($borrowedAt, $dueDate);
         } elseif ($status === 'overdue') {
             $borrowedAt = fake()->dateTimeBetween('-2 months', '-1 month');
             $dueDate = Carbon::instance($borrowedAt)->addDays(14);
         }
+
         return [
-            'book_id'  => Book::all()->random()->id,
-            'member_id'  => Member::all()->random()->id,
-            'borrowed_at'  => $borrowedAt,
-            'due_date'  => $dueDate,
-            'returned_at'  => $returnedAt,
-            'status'  => $status,
-            'notes'  => fake()->sentence(4),
+            'book_id' => Book::all()->random()->id,
+            'member_id' => Member::all()->random()->id,
+            'borrowed_at' => $borrowedAt,
+            'due_date' => $dueDate,
+            'returned_at' => $returnedAt,
+            'status' => $status,
+            'notes' => fake()->sentence(4),
         ];
 
     }
