@@ -25,7 +25,9 @@
         <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
 
             <div class="card-header">
-                <a class="btn btn-primary" href="{{ route('books.create') }}">Create new Book</a>
+                @can('create', App\Models\Book::class)
+                    <a class="btn btn-primary" href="{{ route('books.create') }}">Create new Book</a>
+                @endcan
             </div>
 
 
@@ -83,16 +85,19 @@
                                 </td>
 
                                 <td>
-                                    <a href="{{ route('books.edit', $book->id) }}" class="btn btn-secondary">Edit</a>
+                                    @can('update', $book)
+                                        <a href="{{ route('books.edit', $book->id) }}" class="btn btn-secondary">Edit</a>
+                                    @endcan
                                 </td>
                                 <td>
-                                    <form action="{{ route('books.destroy', $book->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    @can('delete', $book)
+                                        <form action="{{ route('books.destroy', $book->id) }}" method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

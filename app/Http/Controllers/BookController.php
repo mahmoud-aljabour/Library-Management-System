@@ -9,114 +9,89 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\Member;
 use App\Models\Publisher;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    /**
-     * Paginated table of (books with author, )
-     * status, and available copies. Include a search input.
-     * 
-     */
+    public function __construct()
+    {
+        $this->authorizeResource(Book::class, 'book');
+    }
+
     public function index()
     {
-        $request = request();
-
-        $books =  Book::with('author')
-            ->filter($request->query())
+        $books = Book::with('author')
+            ->filter(request()->query())
             ->paginate(15);
+
         return view('books.index', compact('books'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * 
-     */
     public function create()
     {
-        $authors = Author::all();
-        $publishers = Publisher::all();
-        $categories = Category::all();
+        $authors = Author::orderBy('name')->get();
+        $publishers = Publisher::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        // $book = Book::with('author', 'publisher', 'categories');
-        $book = Book::all();
-        return view('books.create', compact([
-            // 'book',
-            'publishers',
-            'authors',
-            'categories'
-        ]));
+        return view('books.create', compact('publishers', 'authors', 'categories'));
     }
 
-    /**
-     * 
-     * Form to add a new book 
-     * (with dropdown for author, publisher, checkboxes for categories).
-     */
     public function store(StoreBookRequest $request)
     {
-        // dd($request->all());
-        $requestValidated = $request->validated();
-        // dd($requestValidated);
-        $book = Book::create($requestValidated);
-        $book->categories()->sync($requestValidated['category_ids']);
-        // dd($book);
-        return redirect()->route('books.index');
+        $validated = $request->validated();
+        $book = Book::create($validated);
+        $book->categories()->sync($validated['category_ids']);
+
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Book created successfully.');
     }
 
-    /**
-     *Book details with author info, categories,
-     *borrowing history, and reviews.
-     * 
-     */
-    public function show($id)
+    public function show(Book $book)
     {
-        $members = Member::all();
-        $book = Book::with(['author', 'categories'])->findOrFail($id);
+        $members = Member::active()->orderBy('name')->get(['id', 'name']);
+        $book->load([
+            'author',
+            'categories',
+            'borrowings.member',
+            'reviews.member',
+        ]);
+
         return view('books.show', compact('book', 'members'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Book $book)
     {
+        $authors = Author::orderBy('name')->get();
+        $publishers = Publisher::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
+        $book->load('author', 'categories');
 
-        $authors = Author::all();
-        $publishers = Publisher::all();
-        $categories = Category::all();
-
-        $book = Book::with('author', 'categories', 'borrowings')
-            ->findOrFail($id);
-        return view('books.edit', compact([
-            'book',
-            'publishers',
-            'authors',
-            'categories'
-        ]));
+        return view('books.edit', compact('book', 'publishers', 'authors', 'categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBookRequest $request, string $id)
+    public function update(UpdateBookRequest $request, Book $book)
     {
-        // dd($request->all());
-
-        $book = Book::findOrFail($id);
-
-        $validated =  $request->validated();
+        $validated = $request->validated();
         $book->update($validated);
         $book->categories()->sync($validated['category_ids']);
-        return redirect()->route('books.index');
+
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Book updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Book $book)
     {
-        //
+        if ($book->borrowings()->active()->exists()) {
+            return redirect()
+                ->route('books.index')
+                ->with('error', 'Cannot delete a book with active borrowings.');
+        }
+
+        $book->delete();
+
+        return redirect()
+            ->route('books.index')
+            ->with('success', 'Book deleted successfully.');
     }
 }

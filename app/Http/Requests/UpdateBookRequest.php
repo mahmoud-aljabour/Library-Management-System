@@ -12,20 +12,17 @@ class UpdateBookRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $book = $this->route('book');
+
+        return $this->user()->can('update', $book);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
        $id = $this->route('book');
         return [
             'title' => 'required|string|max:255|unique:books,title,' . $id,
-            'isbn' => 'required||size:13|unique:books,isbn,' . $id,
+            'isbn' => 'required|string|size:13|unique:books,isbn,' . $id,
             'description' => 'nullable|string|max:255',
             'publish_date' => 'nullable|date',
             'page_count' => 'nullable|int|min:1',

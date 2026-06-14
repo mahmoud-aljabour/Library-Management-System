@@ -16,42 +16,72 @@ class Borrowing extends Model
         'member_id',
         'borrowed_at',
         'due_date',
-        'returnd_at',
+        'returned_at',
         'status',
-        'nots',
+        'notes',
     ];
 
     protected $casts = [
-        'borrowed_at',
-        'due_date',
-        'returnd_at',
-        'status'
+        'borrowed_at' => 'datetime',
+        'due_date' => 'date',
+        'returned_at' => 'datetime',
     ];
 
     public function book()
     {
         return $this->belongsTo(Book::class);
     }
+
     public function member()
     {
         return $this->belongsTo(Member::class);
     }
 
-    public function scopeOverue(Builder $query)
+    public function scopeOverdue(Builder $query): Builder
     {
-        return $query->where('due_date ', '<', Carbon::now())
-            ->when('returned_at', null);
+        return $query->whereNull('returned_at')
+            ->where('due_date', '<', Carbon::today());
     }
-    public function scopeActive(Builder $query)
-    {
-        return $query->where('returned_at', null);
-    }
-    // Accessors
 
-    public function getIsOverdueAttribute()
+    public function scopeActive(Builder $query): Builder
     {
-        if ($this->due_date > 14 && $this->returnd_at = null) {
-            return true;
-        }
+        return $query->whereNull('returned_at')
+            ->whereIn('status', ['borrowed', 'overdue']);
+    }
+
+    public function scopeReturned(Builder $query): Builder
+    {
+        return $query->where('status', 'returned');
+    }
+
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        $query->when($filters['status'] ?? null, function (Builder $query, string $status) {
+            match ($status) {
+                'active' => $query->active(),
+                'overdue' => $query->overdue(),
+                'returned' => $query->returned(),
+                default => $query->where('status', $status),
+            };
+        });
+
+        $query->when($filters['search'] ?? null, function (Builder $query, string $search) {
+            $query->where(function (Builder $query) use ($search) {
+                $query->whereHas('book', function (Builder $query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%");
+                })->orWhereHas('member', function (Builder $query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            });
+        });
+
+        return $query;
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->returned_at === null
+            && Carbon::parse($this->due_date)->isPast();
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-
 
 class Member extends Model
 {
@@ -19,9 +18,10 @@ class Member extends Model
         'membership_date',
         'is_active',
     ];
+
     protected $casts = [
-        'membership_date',
-        'is_active'
+        'membership_date' => 'date',
+        'is_active' => 'boolean',
     ];
 
     public function borrowings()
@@ -36,18 +36,17 @@ class Member extends Model
 
     public function currentBorrowings()
     {
-        return $this->hasMany(Borrowing::class);
+        return $this->hasMany(Borrowing::class)->active();
     }
 
-    public function scopeActive(Builder $query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
 
-    // Accessors
-    public function getMembershipDurationAttribute()
+    public function getMembershipDurationAttribute(): string
     {
-        return  $human_readable  = Carbon::parse($this->membership_date)->age;
-        // return $this->membership_date->diffInYears(Carbon::now());
+        return Carbon::parse($this->membership_date)
+            ->diffForHumans(now(), Carbon::DIFF_ABSOLUTE);
     }
 }

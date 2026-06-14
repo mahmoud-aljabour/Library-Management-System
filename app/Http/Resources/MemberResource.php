@@ -7,20 +7,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class MemberResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'name'  =>$this->name,
-            'eamil' =>$this->eamil,
-            'phone' =>$this->phone,
-            'membership_date'   =>$this->membership_date,
-            'is_active' =>$this->is_active,
-            
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'membership_date' => $this->membership_date?->format('Y-m-d'),
+            'is_active' => $this->is_active,
+            'active_borrowings_count' => $this->whenCounted('active_borrowings_count'),
         ];
     }
 }

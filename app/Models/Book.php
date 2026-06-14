@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Book extends Model
 {
     use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'title',
         'isbn',
@@ -26,7 +26,7 @@ class Book extends Model
     ];
 
     protected $casts = [
-        'publish_date'
+        'publish_date' => 'date',
     ];
 
     public function author()
@@ -56,59 +56,57 @@ class Book extends Model
 
     public function currentBorrowing()
     {
-        return $this->hasOne(Borrowing::class);
+        return $this->hasOne(Borrowing::class)
+            ->whereNull('returned_at')
+            ->latestOfMany('borrowed_at');
     }
 
-
-    public function scopeFilter(Builder $builder, $filters)
+    public function scopeFilter(Builder $builder, $filters): Builder
     {
         $builder->when($filters['title'] ?? false, function ($builder, $value) {
             $builder->where('title', 'LIKE', "%{$value}%");
         });
+
         $builder->when($filters['status'] ?? false, function ($builder, $value) {
             $builder->where('status', $value);
         });
 
         $builder->when($filters['search'] ?? false, function ($builder, $value) {
-
-            $builder->where('title', 'LIKE', "%{$value}%")
-                ->orWhere('isbn', 'LIKE', "%{$value}%")
-                ->orWhere('author_id', 'LIKE', "%{$value}%");
+            $builder->where(function ($query) use ($value) {
+                $query->where('title', 'LIKE', "%{$value}%")
+                    ->orWhere('isbn', 'LIKE', "%{$value}%");
+            });
         });
 
-        // $builder->when($filters['category'] ?? false, function ($builder, $value) {
-
-        //     $builder->where('categories', 'LIKE', "%{$value}%");
-        // });
-
         $builder->when($filters['language'] ?? false, function ($builder, $value) {
-
             $builder->where('language', 'LIKE', "%{$value}%");
         });
 
-        $builder->when($filters['sort'] ?? false, function ($builder, $value) {
-            //->orderBy('title', 'asc')
-
-            // $builder->Row('SELECT * FROM `books` ORDER BY `books`.`title` ASC');
-        });
+        return $builder;
     }
-    public function scopeAvailable(Builder $query)
+
+    public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('status', 'available');
     }
-    public function scopeByLanguage(Builder $query, $lang)
+
+    public function scopeByLanguage(Builder $query, $lang): Builder
     {
         return $query->where('language', $lang);
     }
-    // Accessors
 
-    public function getIsAvailableAttribute()
+    public function getIsAvailableAttribute(): bool
     {
-        return $this->status = 'available' && $this->available_copies > 0;
+        return $this->status === 'available' && $this->available_copies > 0;
     }
 
-    public function getAvailableCopiesAttribute()
+    public function getAvailableCopiesAttribute(): int
     {
-        return $this->total_copies - (Book::where('status', 'borrowed')->count());
+        $activeBorrowings = $this->borrowings()
+            ->whereNull('returned_at')
+            ->whereIn('status', ['borrowed', 'overdue'])
+            ->count();
+
+        return max(0, $this->total_copies - $activeBorrowings);
     }
 }

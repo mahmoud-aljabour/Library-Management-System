@@ -11,77 +11,60 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->authorizeResource(Book::class, 'book');
+    }
+
     public function index(Request $request)
     {
-        $request = request();
-
-        $books =  Book::with('author', 'categories')
+        $books = Book::with('author', 'categories')
             ->filter($request->query())
             ->paginate(15);
 
         return BookResource::collection($books);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreBookRequest $request)
     {
-        $requestValidated = $request->validated();
+        $validated = $request->validated();
+        $book = Book::create($validated);
 
-        $book = Book::create($requestValidated);
-        if (!empty($requestValidated['category_ids'])) {
-            $book->categories()->sync($requestValidated['category_ids']);
+        if (! empty($validated['category_ids'])) {
+            $book->categories()->sync($validated['category_ids']);
         }
 
-        return response($book);
+        return new BookResource($book->load('author', 'categories'));
     }
 
-    /**
-     * 
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Book $book)
     {
-        $book = Book::with('author', 'publisher', 'categories')
-            ->findOrFail($id);
+        $book->load('author', 'publisher', 'categories');
+
         return new BookResource($book);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBookRequest $request, $id)
+    public function update(UpdateBookRequest $request, Book $book)
     {
-
-        $book = Book::findOrFail($id);
-
-        $validated =  $request->validated();
+        $validated = $request->validated();
         $book->update($validated);
         $book->categories()->sync($validated['category_ids']);
-        // $requestValidated = $request->validated();
 
-
-        // $book = Book::with('author', 'categories');
-        // $book->update($requestValidated);
-        // if ($request->has('category_ids')) {
-        //     Book::categories()->sync($requestValidated['category_ids']);
-        // }
-
-        return response($book);
+        return new BookResource($book->load('author', 'categories'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Book $book)
     {
+        if ($book->borrowings()->active()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete a book with active borrowings.',
+            ], 422);
+        }
+
         $book->delete();
+
         return response()->json([
-            'message' => 'deleted Successfully'
+            'message' => 'Book deleted successfully.',
         ]);
     }
 }

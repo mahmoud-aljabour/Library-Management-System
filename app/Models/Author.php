@@ -16,7 +16,7 @@ class Author extends Model
         'nationality'
     ];
     protected $casts = [
-        'birth_date'
+        'birth_date' => 'date',
     ];
 
 

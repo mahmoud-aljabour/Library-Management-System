@@ -1,15 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookController;
+use App\Http\Controllers\Api\BorrowingController;
 use App\Http\Controllers\Api\MemberController;
-use App\Http\Resources\BookResource;
-use App\Models\Book;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:api')
+    ->name('api.login');
 
-Route::apiResource('/books', BookController::class);
-// Route::apiResource('members', MemberController::class);
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+    Route::get('/user', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+
+    Route::apiResource('/books', BookController::class)->names('api.books');
+    Route::apiResource('/members', MemberController::class)->names('api.members');
+    Route::apiResource('/borrowings', BorrowingController::class)->names('api.borrowings');
+});

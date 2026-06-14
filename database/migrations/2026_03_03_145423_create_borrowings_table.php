@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('book_id')->constrained('books');
-            $table->foreignId('member_id')->constrained('books');
+            $table->foreignId('member_id')->constrained('members');
             $table->datetime('borrowed_at');
             $table->date('due_date');
             $table->datetime('returned_at')->nullable();
