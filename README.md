@@ -2,6 +2,8 @@
 
 A full-featured library management application built with **Laravel 12** for managing books, members, borrowings, authors, publishers, categories, and reviews. Includes role-based access control and a RESTful API secured with Sanctum.
 
+**Links:** [GitHub](https://github.com/mahmoud-aljabour) · [Portfolio](https://github.com/mahmoud-aljabour/portfolio) · [LinkedIn](https://www.linkedin.com/in/mahmoud-al-jabour/)
+
 ![Tests](https://github.com/mahmoud-aljabour/Library-Management-System/actions/workflows/tests.yml/badge.svg)
 
 ## Features
